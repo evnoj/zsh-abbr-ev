@@ -1538,6 +1538,18 @@ _abbr_load_user_abbreviations() {
         shwordsplit_on=1
       fi
 
+      # Fast path: the typeset -p snapshots written below (and by _abbr:util_sync_user) are
+      # newer than the user file, so they already reflect it. Sourcing them is much faster
+      # than running `abbr` once per line. -s because _abbr_create_files creates them empty.
+      if [[ -f $ABBR_USER_ABBREVIATIONS_FILE &&
+            -s ${_abbr_tmpdir}regular-user-abbreviations && -s ${_abbr_tmpdir}global-user-abbreviations &&
+            ${_abbr_tmpdir}regular-user-abbreviations -nt $ABBR_USER_ABBREVIATIONS_FILE &&
+            ${_abbr_tmpdir}global-user-abbreviations -nt $ABBR_USER_ABBREVIATIONS_FILE ]]; then
+        source ${_abbr_tmpdir}regular-user-abbreviations
+        source ${_abbr_tmpdir}global-user-abbreviations
+        return
+      fi
+
       # Load saved user abbreviations
       if [[ -f $ABBR_USER_ABBREVIATIONS_FILE ]]; then
         unsetopt shwordsplit
