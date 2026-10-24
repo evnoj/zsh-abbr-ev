@@ -29,6 +29,8 @@
 
 function _job_queue:init"${1:-}"() { # this quotation mark to fix syntax highlighting "
   zmodload zsh/datetime
+  # zf_rm: builtin rm, avoids forking `rm` on every pop
+  zmodload -F zsh/files b:zf_rm
 
   # Log debugging messages?
   typeset -gi JOB_QUEUE_DEBUG=${JOB_QUEUE_DEBUG:-0}
@@ -97,7 +99,7 @@ function job-queue"${1:-}"() { # this quotation mark to fix syntax highlighting 
       scope=$1
       job_id=$2
 
-      'command' 'rm' $_job_queue_tmpdir${scope}/$job_id &>/dev/null
+      zf_rm -f $_job_queue_tmpdir${scope}/$job_id &>/dev/null
     }
 
     # _job_queue:push
