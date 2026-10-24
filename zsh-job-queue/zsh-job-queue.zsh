@@ -217,11 +217,8 @@ function job-queue"${1:-}"() { # this quotation mark to fix syntax highlighting 
 
       # cannot support debug message
 
-      local uuid
-
-      uuid=$('command' 'uuidgen' 2>/dev/null || 'command' 'cat' /dev/urandom | 'command' 'base64' | 'command' 'tr' -dc '0-9a-zA-Z' | 'command' 'head' -c36)
-
-      REPLY="$EPOCHREALTIME--$uuid"
+      # pid + random instead of forking uuidgen; with the microsecond timestamp it's unique per job
+      REPLY="$EPOCHREALTIME--$$-$RANDOM$RANDOM"
     }
 
     # gets unfunction'd
