@@ -2018,12 +2018,7 @@ _abbr_init() {
 
       _abbr_debugger
 
-      # if installed with Homebrew, will not have .gitmodules
-      if [[ -f ${ABBR_SOURCE_PATH}/.gitmodules && ! -f ${ABBR_SOURCE_PATH}/zsh-job-queue/zsh-job-queue.zsh ]]; then
-        'builtin' 'print' abbr: Finishing installing dependencies
-        'command' 'git' submodule update --init --recursive &>/dev/null
-      fi
-
+      # zsh-job-queue is vendored as a git subtree, so it is always present
       if ! [[ -f ${ABBR_SOURCE_PATH}/zsh-job-queue/zsh-job-queue.zsh ]]; then
         'builtin' 'print' abbr: There was a problem finishing installing dependencies
         return 1
