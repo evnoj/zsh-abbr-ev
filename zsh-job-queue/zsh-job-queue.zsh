@@ -144,7 +144,11 @@ function job-queue"${1:-}"() { # this quotation mark to fix syntax highlighting 
         function _job_queue:push:get_front_of_queue_job_id() {
           # cannot support debug message
 
-          'command' 'ls' -t $_job_queue_tmpdir${scope} | 'command' 'tail' -1
+          # sets REPLY. Same result as `ls -t | tail -1` (oldest mtime; on ties, last by name)
+          # without a subshell and two processes
+          local -a jobs
+          jobs=( $_job_queue_tmpdir${scope}/*(N.omon) )
+          REPLY=${jobs[-1]:t}
         }
 
         # gets unfunction'd
@@ -186,10 +190,12 @@ function job-queue"${1:-}"() { # this quotation mark to fix syntax highlighting 
 
         # gets unfunction'd
         function _job_queue:push:wait_turn() {
-          front_of_queue_job_id=$(_job_queue:push:get_front_of_queue_job_id)
+          _job_queue:push:get_front_of_queue_job_id
+          front_of_queue_job_id=$REPLY
 
           while [[ $front_of_queue_job_id != $job_id ]]; do
-            front_of_queue_job_id=$(_job_queue:push:get_front_of_queue_job_id)
+            _job_queue:push:get_front_of_queue_job_id
+            front_of_queue_job_id=$REPLY
 
             front_of_queue_job_age=$(( $EPOCHREALTIME - ${front_of_queue_job_id%%-*} ))
 
@@ -203,6 +209,8 @@ function job-queue"${1:-}"() { # this quotation mark to fix syntax highlighting 
 
         _job_queue:push:add_job
         _job_queue:push:wait_turn
+        # callers read the job id from REPLY; get_front_of_queue_job_id overwrote it
+        REPLY=$job_id
       } always {
         unfunction -m _job_queue:push:add_job
         unfunction -m _job_queue:push:get_front_of_queue_job_id
